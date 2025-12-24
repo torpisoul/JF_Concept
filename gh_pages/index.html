@@ -129,7 +129,7 @@
 </div>
 
 <script type="module">
-    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    import { GoogleGenAI } from "https://esm.run/@google/genai";
 
     let contextData = "";
 
@@ -175,8 +175,7 @@
         const loadingId = addMessage("Thinking...", 'bot-message');
 
         try {
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+            const client = new GoogleGenAI({ apiKey: apiKey });
 
             const baseContext = `
 You are a helpful assistant for school staff, supporting them with Ofsted-related queries.
@@ -186,9 +185,11 @@ Base your answers on the provided context if available.
 
             const fullPrompt = `${baseContext}\n\nCONTEXT DOCUMENTS:\n${contextData}\n\nUSER QUESTION: ${message}`;
 
-            const result = await model.generateContent(fullPrompt);
-            const response = await result.response;
-            const text = response.text();
+            const result = await client.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: fullPrompt
+            });
+            const text = result.text;
 
             // Remove loading message
             removeMessage(loadingId);
