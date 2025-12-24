@@ -54,6 +54,7 @@
             border-radius: 5px;
             max-width: 80%;
             word-wrap: break-word;
+            white-space: pre-wrap;
         }
         .user-message {
             background-color: #e1f5fe;
@@ -175,7 +176,7 @@
 
         try {
             const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash"});
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
             const baseContext = `
 You are a helpful assistant for school staff, supporting them with Ofsted-related queries.

@@ -68,7 +68,7 @@ def get_gemini_response(user_question):
         prompt = f"{CONTEXT}\n\nUser Question: {user_question}"
 
         response = client.models.generate_content(
-            model='gemini-2.0-flash', contents=prompt
+            model='gemini-1.5-flash', contents=prompt
         )
         return response.text
     except Exception as e:
