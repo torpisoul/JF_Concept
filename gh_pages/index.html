@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ofsted Support Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 600px;
+            position: relative;
+        }
+        .chat-header {
+            background-color: #2877bc;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .chat-header img {
+            height: 40px;
+            width: auto;
+            border-radius: 50%;
+        }
+        .chat-history {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #e1f5fe;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            align-self: flex-start;
+        }
+        .input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .input-area input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+        }
+        .input-area button {
+            background-color: #2877bc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-left: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-area button:hover {
+            background-color: #1a5c96;
+        }
+        .api-key-container {
+            padding: 10px;
+            background-color: #fff3cd;
+            color: #856404;
+            border-bottom: 1px solid #ffeeba;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .api-key-input {
+            margin-top: 5px;
+            padding: 5px;
+            width: 80%;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <img src="images/logo.jpg" alt="Logo">
+        Ofsted Support Bot
+    </div>
+
+    <div class="api-key-container">
+        <label for="api-key">Enter Gemini API Key (Required):</label>
+        <input type="password" id="api-key" class="api-key-input" placeholder="Paste your API key here...">
+    </div>
+
+    <div class="chat-history" id="chat-history">
+        <div class="message bot-message">Hello! I can help you with Ofsted-related questions. Please enter your API key above to start.</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Type your question..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+    let contextData = "";
+
+    // Load context on startup
+    window.onload = async function() {
+        try {
+            const response = await fetch('context.txt');
+            if (response.ok) {
+                contextData = await response.text();
+                console.log("Context loaded successfully.");
+            } else {
+                console.warn("Could not load context.txt");
+            }
+        } catch (error) {
+            console.error("Error loading context:", error);
+        }
+    };
+
+    window.handleKeyPress = function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    window.sendMessage = async function() {
+        const inputField = document.getElementById('user-input');
+        const apiKeyInput = document.getElementById('api-key');
+        const message = inputField.value.trim();
+        const apiKey = apiKeyInput.value.trim();
+
+        if (message === "") return;
+
+        if (!apiKey) {
+            alert("Please enter a valid Gemini API Key.");
+            return;
+        }
+
+        // Add user message to chat
+        addMessage(message, 'user-message');
+        inputField.value = '';
+
+        // Add loading state
+        const loadingId = addMessage("Thinking...", 'bot-message');
+
+        try {
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash"});
+
+            const baseContext = `
+You are a helpful assistant for school staff, supporting them with Ofsted-related queries.
+You must always use British English spelling (e.g., 'colour' not 'color', 'specialise' not 'specialize').
+Base your answers on the provided context if available.
+`;
+
+            const fullPrompt = `${baseContext}\n\nCONTEXT DOCUMENTS:\n${contextData}\n\nUSER QUESTION: ${message}`;
+
+            const result = await model.generateContent(fullPrompt);
+            const response = await result.response;
+            const text = response.text();
+
+            // Remove loading message
+            removeMessage(loadingId);
+            addMessage(text, 'bot-message');
+
+        } catch (error) {
+            console.error('Error:', error);
+            removeMessage(loadingId);
+            addMessage("Error communicating with Gemini. Please check your API Key.", 'bot-message');
+        }
+    }
+
+    function addMessage(text, className) {
+        const chatHistory = document.getElementById('chat-history');
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', className);
+        messageDiv.textContent = text;
+        messageDiv.id = "msg-" + Date.now();
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        return messageDiv.id;
+    }
+
+    function removeMessage(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.remove();
+        }
+    }
+</script>
+
+</body>
+</html>

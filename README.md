@@ -37,3 +37,14 @@ The bot will automatically load all text files in that directory and use them as
 ## British English
 
 The bot is instructed to use British English spelling via the system prompt.
+
+## GitHub Pages Deployment
+
+To host this application on GitHub Pages (which only supports static sites), use the contents of the `gh_pages/` directory.
+
+1.  **Context**: The build process (or manual setup) must concatenate all text files from `documents/` into `gh_pages/context.txt` so the static site can load them.
+    ```bash
+    cat documents/*.txt > gh_pages/context.txt
+    ```
+2.  **Deploy**: Upload the contents of the `gh_pages/` folder to your GitHub repository (e.g., to the `main` branch or a `gh-pages` branch) and enable GitHub Pages in the repository settings.
+3.  **API Key**: Since GitHub Pages is a static host, there is no secure backend to store your API Key. The user interface includes an input field for the user to enter their own API Key. **Do not hardcode your API Key in the HTML/JS files if the repository is public.**
