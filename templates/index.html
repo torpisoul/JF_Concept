@@ -26,11 +26,20 @@
             height: 600px;
         }
         .chat-header {
-            background-color: #003366;
+            background-color: #2877bc;
             color: white;
             padding: 15px;
             text-align: center;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .chat-header img {
+            height: 40px;
+            width: auto;
+            border-radius: 50%; /* Optional: if the logo is circular */
         }
         .chat-history {
             flex-grow: 1;
@@ -65,7 +74,7 @@
             outline: none;
         }
         .input-area button {
-            background-color: #003366;
+            background-color: #2877bc;
             color: white;
             border: none;
             padding: 10px 15px;
@@ -74,14 +83,17 @@
             cursor: pointer;
         }
         .input-area button:hover {
-            background-color: #002244;
+            background-color: #1a5c96;
         }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
-    <div class="chat-header">Ofsted Support Bot</div>
+    <div class="chat-header">
+        <img src="/static/images/logo.jpg" alt="Logo">
+        Ofsted Support Bot
+    </div>
     <div class="chat-history" id="chat-history">
         <div class="message bot-message">Hello! I can help you with Ofsted-related questions. How can I assist you today?</div>
     </div>
